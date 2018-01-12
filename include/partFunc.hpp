@@ -1,6 +1,7 @@
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
+#include <vector>
 #ifndef GRAPH_HEADER
 #include "graph.hpp"
 #endif
@@ -158,6 +159,21 @@ double logProd (T r)
     return thresh; 
 }
 
+void randomize (unsigned int* nodeId, unsigned int* outDeg, unsigned int numVertex)
+{
+    std::vector<unsigned int> v;
+    v.reserve(numVertex);
+    for (unsigned int i=0; i<numVertex; i++)
+        v.push_back(nodeId[i]);
+    std::random_shuffle(v.begin(), v.end());
+    for (unsigned int i=0; i<numVertex; i++)
+    {
+        nodeId[i] = v[i];
+        v[i] = outDeg[i];
+    }
+    for (unsigned int i=0; i<numVertex; i++)
+        outDeg[i] = v[nodeId[i]];
+}
 
 //create list of neighboring partitions
 unsigned int createNeighborPartList (graph* G, unsigned int nodeId, unsigned int* partId, unsigned int numParts, unsigned int* n2pWt, unsigned int* list)
@@ -202,10 +218,9 @@ unsigned int leastFilledNeighborPart (unsigned int numParts, unsigned int partSi
 }
 
 //assign the remaining nodes to partitions. return the number of partitions that were used
-unsigned int assignNodes(graph*G, unsigned int nodeId, unsigned int* partId, unsigned int numParts, unsigned int partSize, unsigned int* seqId, unsigned int* n2pWt, unsigned int minPart, unsigned int minPartNodes, heap* heapInstance, unsigned int* list, unsigned int listSize)
+void assignNodes(graph*G, unsigned int nodeId, unsigned int* partId, unsigned int numParts, unsigned int partSize, unsigned int* seqId, unsigned int* n2pWt, unsigned int minPart, unsigned int minPartNodes, heap* heapInstance, unsigned int* list, unsigned int listSize)
 {
     unsigned int neighbor, neighborPart;
-    unsigned int numPartsUsed = 0;
     for (unsigned int i=G->VI[nodeId]; i<G->VI[nodeId+1]; i++)
     {
         neighbor = G->EI[i];
@@ -216,7 +231,6 @@ unsigned int assignNodes(graph*G, unsigned int nodeId, unsigned int* partId, uns
             seqId[neighbor] = minPartNodes++;
             if (minPartNodes >= partSize) //if the partition gets full
             {
-                numPartsUsed++;
                 updateKey(heapInstance, minPart, minPartNodes);
                 minPart = leastFilledNeighborPart (numParts, partSize, list, listSize, heapInstance, n2pWt);
                 if (minPart == numParts)
@@ -234,7 +248,6 @@ unsigned int assignNodes(graph*G, unsigned int nodeId, unsigned int* partId, uns
     for (unsigned int i=G->VI[nodeId]; i<G->VI[nodeId+1]; i++)
         n2pWt[partId[G->EI[i]]] = 0; 
 
-    return numPartsUsed;
 }
 
 void applyNewLabeling(graph* Gold, graph* Gnew, unsigned int* newNodeId)
@@ -263,3 +276,10 @@ void applyNewLabeling(graph* Gold, graph* Gnew, unsigned int* newNodeId)
 
     delete[] oldNodeId;
 } 
+
+void dumpNewOrder (unsigned int* newNodeId, unsigned int size)
+{
+    FILE* fp = fopen("order.txt", "w");
+    for (unsigned int i=0; i<size; i++)
+        fprintf(fp, "%d\n", newNodeId[i]);
+}
