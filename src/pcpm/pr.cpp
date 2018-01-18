@@ -366,7 +366,7 @@ int main(int argc, char** argv)
 void partition(threadData* TD, graph* G)
 {
     unsigned int numEdgesPerBin = (G->numEdges-1)/NUM_BINS + 1;
-    unsigned int numVertexPerBin = (G->numVertex-1)/NUM_BINS + 1;
+    unsigned int numVertexPerBin = binWidth;
     int vcount = 0;
     for (int i=0; i<NUM_BINS; i++)
     {
