@@ -27,8 +27,6 @@
 using namespace std;
 
 
-#define VERTEX_PARTITION
-//#undef VERTEX_PARTITION
 
 #define MAX_NEG 0x80000000
 #define MAX_POS 0x7fffffff
@@ -38,7 +36,7 @@ using namespace std;
 #undef DEBUG
 
 #define DUMP
-#undef DUMP
+//#undef DUMP
 
 //////////////////////////////////////////
 // level 2 debugging - asserts enabled
@@ -365,7 +363,6 @@ int main(int argc, char** argv)
 //compute equal sized (vertex/edge) partitions
 void partition(threadData* TD, graph* G)
 {
-    unsigned int numEdgesPerBin = (G->numEdges-1)/NUM_BINS + 1;
     unsigned int numVertexPerBin = binWidth;
     int vcount = 0;
     for (int i=0; i<NUM_BINS; i++)
@@ -373,19 +370,7 @@ void partition(threadData* TD, graph* G)
         TD[i].tid = i;
         TD[i].G = G;
         TD[i].startVertex = vcount;
-#ifndef VERTEX_PARTITION
-        while(G->VI[vcount] < ((i+1)*numEdgesPerBin)) 
-        {
-            vcount++;
-            if (vcount >= G->numVertex-1)
-            {
-                cout << vcount << " " << G->numVertex << endl;
-                break;
-            }
-        }
-#else
         vcount += numVertexPerBin;
-#endif
         TD[i].endVertex = vcount;
         TD[i].endVertex = (TD[i].endVertex > G->numVertex) ? G->numVertex : TD[i].endVertex;
     }
@@ -578,8 +563,9 @@ void gather(graph* G, float* updateBin, unsigned int* destIdBin, unsigned int* o
 
     for (unsigned int i=startVertex; i<endVertex; i++)
     {
+        G->attr[i] = (dampingFactor + (1-dampingFactor)*G->attr[i]);
         if (outDeg[i] > 0)
-            G->attr[i] = (dampingFactor + (1-dampingFactor)*G->attr[i])/(outDeg[i]);
+            G->attr[i] = G->attr[i]/(outDeg[i]);
     }
 
 

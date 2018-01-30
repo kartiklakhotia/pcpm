@@ -159,19 +159,19 @@ void initGraph (graph* G, unsigned int* outDeg)
    #pragma omp parallel for
     for (unsigned int i=0; i<G->numVertex; i++)
     {
-        if (outDeg[i] > 0)
-            G->attr[i]   = (1.0);  
+        G->attr[i]   = (1.0);  
     }
     return;
 }
 
 void initGraphPullPR (graph* G, unsigned int* outDeg)
 {
-    G->attr = new float [G->numVertex];
+    G->attr = new float [G->numVertex]();
 
     #pragma omp parallel for
     for (unsigned int i=0; i<G->numVertex; i++)
     {
+        G->attr[i] = 1;
         if (outDeg[i] > 0)
             G->attr[i]   = (1.0)/outDeg[i];  
     }

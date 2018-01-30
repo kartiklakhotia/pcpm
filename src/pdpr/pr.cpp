@@ -1,7 +1,6 @@
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
-#include <pthread.h>
 #include <time.h>
 #include <omp.h>
 
@@ -27,10 +26,7 @@ typedef struct threadData
 #undef DEBUG
 
 #define DUMP
-#undef DUMP
-
-#define USE_OPENMP
-//#undef USE_OPENMP
+//#undef DUMP
 
 #define PERF_MON
 #undef PERF_MON
@@ -45,48 +41,6 @@ pthread_barrier_t barrier;
 //function for openmp
 void prOmp (threadData* TD);
 
-//function pointer for pthreads
-void *prIter (void* threadArg)
-{
-    threadData* TD = (threadData *) threadArg; 
-    graph* G = TD->G;
-    unsigned int* degArr = TD->outDeg;
-    float* srcArr = TD->srcArr;
-    float* dstArr = TD->dstArr;
-    unsigned int start = TD->startVertex;
-    unsigned int end = TD->endVertex;
-    end = (end > G->numVertex) ? G->numVertex : end;
-    float tempVal = 0; 
-    unsigned int iter=0;
-    while(iter < MAX_ITER)
-    {
-        if (iter%2)
-        {
-            for (unsigned int i=start; i<end; i++)
-            {
-                float tempVal = 0; 
-                for (unsigned int j=G->VI[i]; j<G->VI[i+1]; j++)
-                    tempVal += (srcArr[G->EI[j]]);
-                if (degArr[i] > 0)
-                    dstArr[i] = (d + (1-d)*tempVal)/degArr[i];
-            }
-        }
-        else
-        {
-            for (unsigned int i=start; i<=end; i++)
-            {
-                float tempVal = 0; 
-                for (unsigned int j=G->VI[i]; j<G->VI[i+1]; j++)
-                    tempVal += (dstArr[G->EI[j]]);
-                if (degArr[i] > 0)
-                    srcArr[i] = (d + (1-d)*tempVal)/degArr[i];
-            }
-        }
-        iter++;
-        pthread_barrier_wait (&barrier);
-    }
-     
-}
 
 int main(int argc, char** argv)
 {
@@ -119,8 +73,7 @@ int main(int argc, char** argv)
     // output Degree array
     float* temp = new float[G.numVertex]();
     unsigned int* outDeg = new unsigned int [G.numVertex]();
-//    findOutDeg(&G, outDeg);
-    findOutDegTrans(&G, outDeg);
+    findOutDeg(&G, outDeg);
 #ifdef DEBUG
     printf("out degree computed\n");
 #endif
@@ -134,15 +87,13 @@ int main(int argc, char** argv)
 #endif 
 
     //compute transpose for pull based PR
-//    transposeCSR (&G);
+    transposeCSR (&G);
 #ifdef DEBUG
     printf("graph transpose computed for pull baseline\n");
 #endif 
 
     //thread attributes and objects
-    pthread_t* threads = (pthread_t*) malloc (sizeof(pthread_t)*NUM_THREADS);
     threadData* TD = (threadData*) malloc (sizeof(threadData)*NUM_THREADS);
-    pthread_barrier_init (&barrier, NULL, NUM_THREADS);
 
     unsigned int numEdgesPerThread = G.numEdges/NUM_THREADS;
 
@@ -181,6 +132,7 @@ int main(int argc, char** argv)
     ///////////////////////////////////
     ///// warmup iteration/////////////
     //////////////////////////////////
+	if( clock_gettime(CLOCK_REALTIME, &start) == -1) { perror("clock gettime");}
     #pragma omp parallel for schedule(static, 1) num_threads(NUM_THREADS)
     for (unsigned int i=0; i<NUM_THREADS; i++)
     {
@@ -198,16 +150,6 @@ int main(int argc, char** argv)
         }
     }
     numIter++;
-
-	if( clock_gettime(CLOCK_REALTIME, &start) == -1) { perror("clock gettime");}
-#ifndef USE_OPENMP
-    for (unsigned int i=0; i<NUM_THREADS; i++)
-        rc = pthread_create(&threads[i], NULL, prIter, (void *) &TD[i]);
-    for (unsigned int i=0; i<NUM_THREADS; i++)
-        rc = pthread_join(threads[i], NULL);
-#else
-
-
 
     while(numIter < MAX_ITER+1)
     {
@@ -229,8 +171,8 @@ int main(int argc, char** argv)
         }
         numIter++;
     }
-//    printf("pagerank computed using openmp\n");
-#endif
+
+
     if (numIter%2==0)
     {
         for (unsigned int i=0; i<G.numVertex; i++)
@@ -280,10 +222,8 @@ int main(int argc, char** argv)
     //////////////////////////////////////
 
     // free allocated memory//
-    pthread_barrier_destroy(&barrier);
     freeMem(&G);
     free(TD);
-    free(threads);
     delete[] temp;
     delete[] outDeg;
     
@@ -308,9 +248,9 @@ void prOmp (threadData* TD)
         float tempVal = 0; 
         for (unsigned int j=G->VI[i]; j<G->VI[i+1]; j++)
             tempVal += (srcArr[G->EI[j]]);
-		dstArr[i] = tempVal;
+		dstArr[i] = (d + (1-d)*tempVal);
         if (degArr[i] > 0)
-            dstArr[i] = (d + (1-d)*tempVal)/degArr[i];
+            dstArr[i] = dstArr[i]/degArr[i];
     }
 }
 

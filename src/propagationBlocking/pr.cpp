@@ -31,7 +31,7 @@ using namespace std;
 #undef DEBUG
 
 #define DUMP
-#undef DUMP
+//#undef DUMP
 
 #define DEBUGL2
 #undef DEBUGL2
