@@ -279,6 +279,7 @@ void createReverseCSR(graph* G1, graph* G2)
         } 
     }
     delete[] tempId;
+    sortEdges(G2); 
 }
 
 

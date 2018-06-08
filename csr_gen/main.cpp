@@ -12,21 +12,39 @@
 #undef DEBUG
 
 bool weighted = false;
+bool createReverse = false;
 
 using namespace std;
 
 int main(int argc, char** argv)
 {
 
+    unsigned int wtValue = 0;
+    unsigned int reverseFileIndex = 0;
+
     if (argc < 3)
     {
-        printf("Usage : %s <inputFile1> <outputFile>\n", argv[0]);
+        printf("Usage : %s <inputFile1> <outputFile> -w <weight_type> -r <graphTransposeOutputFilename>\n", argv[0]);
         exit(1);
     }
     for (int i=1; i<argc; i++)
     {
         if (strcmp(argv[i], "-w")==0)
+        {
             weighted = true;
+            if (i+1 < argc)
+                wtValue = (unsigned int)atoi(argv[i+1]);
+            else
+            {
+                printf("specify whether to read weights from file or assign all 1's\n");
+                exit(1);
+            }
+        }
+        if (strcmp(argv[i], "-r")==0)
+        {
+            createReverse = true;
+            reverseFileIndex = i+1;
+        }
     }
 
     // edge list
@@ -52,7 +70,15 @@ int main(int argc, char** argv)
             break;
         fscanf(fp, "%d", &dstVal);
         if (weighted)
-            fscanf(fp, "%d", &edgeWeight);
+        {
+            if (wtValue == 0)
+                fscanf(fp, "%d", &edgeWeight);
+            else if (wtValue == 1)
+                edgeWeight = 1;
+            else
+                edgeWeight = rand() % 10 + 1;
+        }
+       
         numVertex = (srcVal > numVertex) ? srcVal : numVertex;
         numVertex = (dstVal > numVertex) ? dstVal : numVertex;
         if (srcVal != dstVal)
@@ -100,6 +126,14 @@ int main(int argc, char** argv)
     sortEdges(&G1);
     write_csr(argv[2], &G1); 
 
+    if (createReverse)
+    {
+        graph G2;
+        createReverseCSR(&G1, &G2);
+        write_csr(argv[reverseFileIndex], &G2); 
+        freeMem(&G2);
+    }
+
 
     delete[] inDeg;
     freeMem(&G1);
@@ -108,6 +142,12 @@ int main(int argc, char** argv)
     read_csr (argv[2], &G1);
     printGraph(&G1);
     freeMem(&G1);
+    if (createReverse)
+    {
+        read_csr (argv[reverseFileIndex], &G1);
+        printGraph(&G1);
+        freeMem(&G1);
+    }
 #endif
 
     return 0;
