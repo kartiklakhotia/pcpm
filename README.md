@@ -5,7 +5,7 @@
 
 * Find the paper on https://arxiv.org/abs/1709.07122
 * Baseline is propagation blocking (http://www.scottbeamer.net/pubs/beamer-ipdps2017.pdf)
-* Avoiding random accesses and reducing overall communication
+* SpMV acceleration - Avoiding random accesses and reducing overall communication
 
 ### Directory Structure ###
 
