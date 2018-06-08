@@ -8,16 +8,16 @@ Input file should be a list of (src,dst) pairs (see exGraph.txt)
 
 For generating weighted graphs,
 
-1. if the input file has weights, use
-    ./a.out \<inputGraphFileName\> \<outputFileName\> -w 0
+1. if the input file has weights, use\\
+    ./a.out \<inputGraphFileName\> \<outputFileName\> -w 0 \\
     **Input file should be a list of (src,dst,wt) tuples (see exGraphWt.txt)
 
-2. if all weights are 1, use
-    ./a.out \<inputGraphFileName\> \<outputFileName\> -w 1
+2. if all weights are 1, use\\
+    ./a.out \<inputGraphFileName\> \<outputFileName\> -w 1\\
     **Input file should be a list of (src,dst) pairs (see exGraph.txt)
 
-3. if weights are to be randomly assigned (between 1 and 10), use
-    ./a.out \<inputGraphFileName\> \<outputFileName\> -w 2
+3. if weights are to be randomly assigned (between 1 and 10), use\\
+    ./a.out \<inputGraphFileName\> \<outputFileName\> -w 2\\
     **Input file should be a list of (src,dst) pairs (see exGraph.txt)
 
 
