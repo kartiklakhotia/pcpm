@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 #include <math.h>
 #include <sys/time.h>
@@ -10,22 +11,28 @@
 #define DEBUG 
 #undef DEBUG
 
+bool weighted = false;
+
 using namespace std;
-
-
 
 int main(int argc, char** argv)
 {
 
-    if (argc != 3)
+    if (argc < 3)
     {
         printf("Usage : %s <inputFile1> <outputFile>\n", argv[0]);
         exit(1);
+    }
+    for (int i=1; i<argc; i++)
+    {
+        if (strcmp(argv[i], "-w")==0)
+            weighted = true;
     }
 
     // edge list
     std::vector<unsigned int> src;
     std::vector<unsigned int> dst;
+    std::vector<unsigned int> ew;
 
     unsigned int numEdgesRead = 0;
 
@@ -38,19 +45,21 @@ int main(int argc, char** argv)
 
     unsigned int srcVal, dstVal;
     unsigned int numVertex = 0;
-//    unsigned int edgeWeight = 0;
+    unsigned int edgeWeight = 0;
     while(!feof(fp))
     {
         if(fscanf(fp, "%d", &srcVal) <= 0)
             break;
         fscanf(fp, "%d", &dstVal);
-//        fscanf(fp, "%d", &edgeWeight);
+        if (weighted)
+            fscanf(fp, "%d", &edgeWeight);
         numVertex = (srcVal > numVertex) ? srcVal : numVertex;
         numVertex = (dstVal > numVertex) ? dstVal : numVertex;
         if (srcVal != dstVal)
         {
             src.push_back(srcVal);
             dst.push_back(dstVal);
+            ew.push_back(edgeWeight);
             numEdgesRead++;
         }
     }
@@ -66,10 +75,13 @@ int main(int argc, char** argv)
 
 
     graph G1;
+    G1.weighted = weighted;
     G1.numVertex = numVertex;
     G1.numEdges = numEdgesRead;
     G1.VI = new unsigned int [numVertex+1]();
     G1.EI = new unsigned int [numEdgesRead]();
+    if (weighted)
+        G1.EW = new unsigned int [numEdgesRead]();
 
     for (unsigned int i=1; i<=numVertex; i++)
         G1.VI[i] = G1.VI[i-1] + inDeg[i-1];
@@ -80,6 +92,8 @@ int main(int argc, char** argv)
     for (unsigned int i=0; i<numEdgesRead; i++)
     {
         G1.EI[G1.VI[src[i]] + inDeg[src[i]]] = dst[i];
+        if (weighted)
+            G1.EW[G1.VI[src[i]] + inDeg[src[i]]] = ew[i];
         inDeg[src[i]]++;
     }
 

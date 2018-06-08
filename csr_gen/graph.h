@@ -4,12 +4,15 @@
 
 #define GRAPH_HEADER_INCL
 
+
 typedef struct graph 
 {
     unsigned int numVertex;
     unsigned int numEdges;
     unsigned int* VI;
     unsigned int* EI;
+    unsigned int* EW;
+    bool weighted;
 } graph;
 
 int read_csr (char*, graph*);
