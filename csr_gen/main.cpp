@@ -13,6 +13,7 @@
 
 bool weighted = false;
 bool createReverse = false;
+bool undirected = false;
 
 using namespace std;
 
@@ -45,6 +46,8 @@ int main(int argc, char** argv)
             createReverse = true;
             reverseFileIndex = i+1;
         }
+        if (strcmp(argv[i], "-u")==0)
+            undirected = true;
     }
 
     // edge list
@@ -87,6 +90,13 @@ int main(int argc, char** argv)
             dst.push_back(dstVal);
             ew.push_back(edgeWeight);
             numEdgesRead++;
+            if (undirected)
+            {
+                src.push_back(dstVal);
+                dst.push_back(srcVal);
+                ew.push_back(edgeWeight);
+                numEdgesRead++;
+            }
         }
     }
     fclose(fp);

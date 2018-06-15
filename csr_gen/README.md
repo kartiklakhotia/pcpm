@@ -4,7 +4,13 @@ Steps to run:
 1. make
 2. ./a.out \<inputGraphFileName\> \<outputFileName\>
 
-Input file should be a list of (src,dst) pairs (see exGraph.txt)
+Input file should be a list of directed (src,dst) pairs (see exGraph.txt) <br />
+
+If the input file represents an undirected graph, specify using the "-u" option eg. <br />
+
+ ./a.out \<inputGraphFileName\> \<outputFileName\> -u  <br />
+
+
 
 For generating weighted graphs,
 
