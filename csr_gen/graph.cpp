@@ -2,20 +2,19 @@
 
 ///SORT functions to sort edges on source or destination//
 ///These functions are internal. Not to be exposed outside
-#define LSB_MASK 0x00000001
 
-unsigned int computeMean (unsigned int a, unsigned int b)
+intE computeMean (intE a, intE b)
 {
-    unsigned int meanVal = (a >> 1) + (b >> 1) + ((a & LSB_MASK) + (b & LSB_MASK))/2;
+    intE meanVal = (a >> 1) + (b >> 1) + ((a & LSB_MASK) + (b & LSB_MASK))/2;
     return meanVal;
 }
 
 template <typename T1, typename T2>
-void merge (T1* arr, T2* key, unsigned int low, unsigned int high, unsigned int mid)
+void merge (T1* arr, T2* key, intE low, intE high, intE mid)
 {
-    unsigned int i = low;
-    unsigned int j = mid+1;
-    unsigned int k = 0;
+    intE i = low;
+    intE j = mid+1;
+    intE k = 0;
     T1* temp = new T1 [high-low+1];
     T2* tempKey = new T2 [high-low+1];
     while(i<=mid && j<=high)
@@ -51,7 +50,7 @@ void merge (T1* arr, T2* key, unsigned int low, unsigned int high, unsigned int 
 }
 
 template <typename T1, typename T2>
-void mergeSort (T1* arr, T2* key, unsigned int low, unsigned int high)
+void mergeSort (T1* arr, T2* key, intE low, intE high)
 {
 
     if (low >= high)
@@ -69,7 +68,7 @@ void mergeSort (T1* arr, T2* key, unsigned int low, unsigned int high)
         }
         return;
     }
-    unsigned int mid = computeMean(low, high);
+    intE mid = computeMean(low, high);
     mergeSort<T1, T2>(arr, key, low, mid);
     mergeSort<T1, T2>(arr, key, mid + 1, high);
     merge<T1, T2>(arr, key, low, high, mid);
@@ -78,11 +77,11 @@ void mergeSort (T1* arr, T2* key, unsigned int low, unsigned int high)
 
 
 template <typename T>
-void mergeWOkey (T* arr, unsigned int low, unsigned int high, unsigned int mid)
+void mergeWOkey (T* arr, intE low, intE high, intE mid)
 {
-    unsigned int i = low;
-    unsigned int j = mid+1;
-    unsigned int k = 0;
+    intE i = low;
+    intE j = mid+1;
+    intE k = 0;
     T* temp = new T [high-low+1];
     while(i<=mid && j<=high)
     {
@@ -102,7 +101,7 @@ void mergeWOkey (T* arr, unsigned int low, unsigned int high, unsigned int mid)
 
 
 template <typename T>
-void mergeSortWOkey (T* arr, unsigned int low, unsigned int high)
+void mergeSortWOkey (T* arr, intE low, intE high)
 {
 
     if (low >= high)
@@ -117,7 +116,7 @@ void mergeSortWOkey (T* arr, unsigned int low, unsigned int high)
         }
         return;
     }
-    unsigned int mid = computeMean(low, high);
+    intE mid = computeMean(low, high);
     mergeSortWOkey<T>(arr, low, mid);
     mergeSortWOkey<T>(arr, mid + 1, high);
     mergeWOkey<T>(arr, low, high, mid);
@@ -135,13 +134,13 @@ int read_csr (char* filename, graph* G)
         fputs("file error", stderr);
         return -1;
     }
-    fread (&(G->numVertex), sizeof(unsigned int), 1, graphFile);
-    fread (&(G->numEdges), sizeof(unsigned int), 1, graphFile);
+    fread (&(G->numVertex), sizeof(intV), 1, graphFile);
+    fread (&(G->numEdges), sizeof(intE), 1, graphFile);
 
 
-    G->VI = new unsigned int[G->numVertex];
+    G->VI = new intE[G->numVertex];
 
-    fread (G->VI, sizeof(unsigned int), G->numVertex, graphFile);
+    fread (G->VI, sizeof(intE), G->numVertex, graphFile);
     if (feof(graphFile))
     {
         delete[] G->VI;
@@ -155,8 +154,8 @@ int read_csr (char* filename, graph* G)
         return -1;
     }
 
-    G->EI = new unsigned int[G->numEdges];
-    fread (G->EI, sizeof(unsigned int), G->numEdges, graphFile);
+    G->EI = new intV[G->numEdges];
+    fread (G->EI, sizeof(intV), G->numEdges, graphFile);
     if (feof(graphFile))
     {
         delete[] G->VI;
@@ -200,14 +199,14 @@ int read_csr (char* filename, graph* G)
 void sortEdges(graph* G)
 {
     #pragma omp parallel for
-    for (unsigned int i=0; i<G->numVertex; i++)
+    for (intV i=0; i<G->numVertex; i++)
     {
         if (G->VI[i+1] > (G->VI[i]+1))
         {
             if (!G->weighted)
-                mergeSortWOkey<unsigned int>(G->EI, G->VI[i], G->VI[i+1]-1);
+                mergeSortWOkey<intV>(G->EI, G->VI[i], G->VI[i+1]-1);
             else
-                mergeSort<unsigned int>(G->EI, G->EW, G->VI[i], G->VI[i+1]-1);
+                mergeSort<intV, unsigned int>(G->EI, G->EW, G->VI[i], G->VI[i+1]-1);
         }
     }
     return;
@@ -217,15 +216,15 @@ void printGraph (graph* G)
 {
     printf("number of vertices are %d\n", G->numVertex);
     printf("number of edges are %d\n", G->numEdges);
-    for (unsigned int i=0; i<G->numVertex; i++)
+    for (intV i=0; i<G->numVertex; i++)
         printf("%d ", G->VI[i]);
     printf("\n");
-    for (unsigned int i=0; i<G->numEdges; i++)
+    for (intE i=0; i<G->numEdges; i++)
         printf("%d ", G->EI[i]);
     printf("\n");
     if (G->weighted)
     {
-        for (unsigned int i=0; i<G->numEdges; i++)
+        for (intE i=0; i<G->numEdges; i++)
             printf("%d ", G->EW[i]);
         printf("\n");
     }
@@ -240,10 +239,10 @@ void write_csr (char* filename, graph* G)
         fputs("file error", stderr);
         return;
     }
-    fwrite(&G->numVertex, sizeof(unsigned int), 1, fp); 
-    fwrite(&G->numEdges, sizeof(unsigned int), 1, fp); 
-    fwrite(G->VI, sizeof(unsigned int), G->numVertex, fp); 
-    fwrite(G->EI, sizeof(unsigned int), G->numEdges, fp); 
+    fwrite(&G->numVertex, sizeof(intV), 1, fp); 
+    fwrite(&G->numEdges, sizeof(intE), 1, fp); 
+    fwrite(G->VI, sizeof(intE), G->numVertex, fp); 
+    fwrite(G->EI, sizeof(intV), G->numEdges, fp); 
     if (G->weighted)
         fwrite(G->EW, sizeof(unsigned int), G->numEdges, fp);
     fclose(fp); 
@@ -254,23 +253,23 @@ void createReverseCSR(graph* G1, graph* G2)
     G2->weighted = G1->weighted;
     G2->numVertex = G1->numVertex;
     G2->numEdges = G1->numEdges;
-    G2->VI = new unsigned int[G1->numVertex]();
-    G2->EI = new unsigned int[G1->numEdges]; 
+    G2->VI = new intE[G1->numVertex]();
+    G2->EI = new intV[G1->numEdges]; 
     if (G2->weighted)
         G2->EW = new unsigned int[G1->numEdges]; 
 
-    for (unsigned int i=0; i<G1->numEdges; i++)
+    for (intE i=0; i<G1->numEdges; i++)
     {
         if (G1->EI[i] < G1->numVertex-1)
             G2->VI[G1->EI[i]+1]++;
     }
-    for (unsigned int i=1; i<G1->numVertex; i++)
+    for (intV i=1; i<G1->numVertex; i++)
         G2->VI[i] += G2->VI[i-1];
-    unsigned int* tempId = new unsigned int [G1->numVertex]();
-    for (unsigned int i=0; i<G1->numVertex; i++)
+    intE* tempId = new intE [G1->numVertex]();
+    for (intV i=0; i<G1->numVertex; i++)
     {
-        unsigned int maxId = (i==G1->numVertex-1) ? G1->numEdges : G1->VI[i+1];
-        for (unsigned int j=G1->VI[i]; j<maxId; j++)
+        intE maxId = (i==G1->numVertex-1) ? G1->numEdges : G1->VI[i+1];
+        for (intE j=G1->VI[i]; j<maxId; j++)
         {
             G2->EI[G2->VI[G1->EI[j]] + tempId[G1->EI[j]]] = i;
             if (G2->weighted)

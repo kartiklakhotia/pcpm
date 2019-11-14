@@ -51,11 +51,11 @@ int main(int argc, char** argv)
     }
 
     // edge list
-    std::vector<unsigned int> src;
-    std::vector<unsigned int> dst;
+    std::vector<intV> src;
+    std::vector<intV> dst;
     std::vector<unsigned int> ew;
 
-    unsigned int numEdgesRead = 0;
+    intE numEdgesRead = 0;
 
     FILE* fp = fopen (argv[1], "r");
     if (fp == NULL)
@@ -64,8 +64,8 @@ int main(int argc, char** argv)
         return -1;
     }
 
-    unsigned int srcVal, dstVal;
-    unsigned int numVertex = 0;
+    intV srcVal, dstVal;
+    intV numVertex = 0;
     unsigned int edgeWeight = 0;
     while(!feof(fp))
     {
@@ -103,10 +103,10 @@ int main(int argc, char** argv)
 
     numVertex++;
 
-    unsigned int* inDeg = new unsigned int [numVertex]();
+    intV* inDeg = new intV [numVertex]();
 
     
-    for (unsigned int i=0; i<numEdgesRead; i++)
+    for (intE i=0; i<numEdgesRead; i++)
         inDeg[src[i]]++;
 
 
@@ -114,18 +114,18 @@ int main(int argc, char** argv)
     G1.weighted = weighted;
     G1.numVertex = numVertex;
     G1.numEdges = numEdgesRead;
-    G1.VI = new unsigned int [numVertex+1]();
-    G1.EI = new unsigned int [numEdgesRead]();
+    G1.VI = new intE [numVertex+1]();
+    G1.EI = new intV [numEdgesRead]();
     if (weighted)
         G1.EW = new unsigned int [numEdgesRead]();
 
-    for (unsigned int i=1; i<=numVertex; i++)
+    for (intV i=1; i<=numVertex; i++)
         G1.VI[i] = G1.VI[i-1] + inDeg[i-1];
 
-    for (unsigned int i=0; i<numVertex; i++)
+    for (intV i=0; i<numVertex; i++)
         inDeg[i] = 0;
 
-    for (unsigned int i=0; i<numEdgesRead; i++)
+    for (intE i=0; i<numEdgesRead; i++)
     {
         G1.EI[G1.VI[src[i]] + inDeg[src[i]]] = dst[i];
         if (weighted)
