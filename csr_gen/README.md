@@ -1,4 +1,4 @@
-convert edge list text file to csr binary file
+### convert edge list text file to csr binary file ###
 
 Steps to run:
 1. make
@@ -12,7 +12,7 @@ If the input file represents an undirected graph, specify using the "-u" option 
 
 
 
-For generating weighted graphs,
+### For generating weighted graphs, ###
 
 1. if the input file has weights, use <br />
     ./a.out \<inputGraphFileName\> \<outputFileName\> -w 0 <br />
@@ -27,5 +27,11 @@ For generating weighted graphs,
     **Input file should be a list of (src,dst) pairs (see exGraph.txt)
 
 
-To create CSC or transpose graph (for pull direction computation), use
+### Converting Large Graphs ### 
+Enable the following flags in makefile(s):
+1. HUGE\_EDGE: if number of edges is >4B
+2. HUGE\_VERTEX: if number of vertices is >2B 
+
+
+### To create CSC or transpose graph (for pull direction computation) ###
 1. ./a.out \<inputGraphFileName\> \<outputFileName\> -r \<transposeFileName\>
