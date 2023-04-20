@@ -11,7 +11,7 @@ endif
 
 CC      = g++
 CPPFLAGS= -O3 -c -std=c++11 -w $(INTE) $(INTV)
-LDFLAGS = -static -O3 -m64
+LDFLAGS = -O3 -m64
 SOURCES = main.cpp graph.cpp 
 OBJECTS = $(SOURCES:.cpp=.o)
 
